@@ -1,0 +1,80 @@
+-- Створення БД
+DROP DATABASE IF EXISTS HardwareStore_DB;
+CREATE DATABASE HardwareStore_DB;
+USE HardwareStore_DB;
+
+-- Створення таблиць
+CREATE TABLE HistoryLog(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  Operation varchar(100) NOT NULL,
+  `Date` timestamp
+);
+
+CREATE TABLE Manufacturer(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  `Name` VARCHAR(60) UNIQUE
+);
+
+CREATE TABLE Worker(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  VisibleId VARCHAR(10) UNIQUE,
+  FullName VARCHAR(100) NOT NULL,
+  Phone VARCHAR(15) NOT NULL,
+  Post VARCHAR(30)
+);
+
+CREATE TABLE Type(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  `Name` VARCHAR(60),
+  Price INT,
+  Manufacturer INT,
+  typeOfPackaging VARCHAR(40),
+  `description` VARCHAR(200),
+  CONSTRAINT FK_Type_Manufacturer FOREIGN KEY (Manufacturer) REFERENCES Manufacturer(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Materials(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  `Type` INT,
+  countOnStorage INT,
+  Sold INT,
+  CONSTRAINT FK_Materials_Type FOREIGN KEY (Type) REFERENCES Type(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Shipment(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  Ordered DATE,
+  MaterialType INT,
+  `count` INT,
+  ClaimedDate DATE,
+  OrderedBy INT,
+  CONSTRAINT FK_Shipment_Type FOREIGN KEY (MaterialType) REFERENCES Type(id) ON DELETE CASCADE,
+  CONSTRAINT FK_Shipment_Worker FOREIGN KEY (OrderedBy) REFERENCES Worker(id) ON DELETE CASCADE
+);
+
+CREATE TABLE ClientFeedBack(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  Material INT,
+  `Date` DATE,
+  Score INT CHECK (Score >= 0 AND Score <= 10),
+  `Text` VARCHAR(500),
+  CONSTRAINT FK_ClientFeedBack_Material FOREIGN KEY (Material) REFERENCES Materials(id) ON DELETE CASCADE
+);
+
+CREATE TABLE ClientOrder(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  IdForClient VARCHAR(30) NOT NULL UNIQUE,
+  IdWorker INT,
+  `Date` DATE ,
+  Claimed DATE,
+  CONSTRAINT FK_ClientOrder_Worker FOREIGN KEY (IdWorker) REFERENCES Worker(id) ON DELETE CASCADE
+);
+
+CREATE TABLE MaterialInOrder(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  Material INT,
+  `Count` INT,
+  ToOrder INT,
+  CONSTRAINT FK_MaterialInOrder_Material FOREIGN KEY (Material) REFERENCES Materials(id) ON DELETE CASCADE,
+  CONSTRAINT FK_MaterialInOrder_ClientOrder FOREIGN KEY (ToOrder) REFERENCES ClientOrder(id) ON DELETE CASCADE
+);
